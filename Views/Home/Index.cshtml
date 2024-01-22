@@ -1,0 +1,60 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+
+<hr />
+
+<div class="container">
+    <div>
+        <label>Your Name: </label>
+        <input type="text" id="displayname" /> 
+    </div>
+
+    <div>
+<textarea rows="4" cols="50" placeholder="Type" id="textInput"></textarea>
+        <p id="typingStatus"></p>
+    </div>
+
+    <div>
+        <p id="receivedStatus"></p>  
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@@microsoft/signalr@7.0.2/dist/browser/signalr.min.js"></script>
+
+<script>
+    var connection = new signalR.HubConnectionBuilder().withUrl("/chat").build();
+    connection.start().catch(function (err) {
+        return console.error(err.toString());
+    });
+
+    document.getElementById("textInput").addEventListener("input", function (event) {
+        var user = document.getElementById("displayname").value;
+        var message = document.getElementById("textInput").value;
+
+        connection.invoke("SendMessage", user, message).catch(function (err) {
+            return console.error(err.toString());
+        });
+
+        
+        var typingStatus = document.getElementById("typingStatus");
+  
+
+        event.preventDefault();
+    });
+
+    connection.on("ReceiveMessage", function (user, message) {
+        var encodedMsg = message;
+
+     
+        var receivedStatus = document.getElementById("receivedStatus");
+        receivedStatus.innerText = user + " is Typing.......";
+
+        
+        var typingStatus = document.getElementById("typingStatus");
+        typingStatus.innerText = '';
+
+        var textarea = document.getElementById("textInput");
+        textarea.value = encodedMsg;
+    });
+</script>
